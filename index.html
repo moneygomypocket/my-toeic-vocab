@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>我的 TOEIC 字卡</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, "Noto Sans TC", sans-serif;
+      background: #f2f2f2;
+      color: #222;
+    }
+
+    .app {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 28px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      margin-top: 24px;
+    }
+
+    .label {
+      color: #4caf50;
+      font-size: 14px;
+      margin-top: 16px;
+    }
+
+    #word {
+      color: #4caf50;
+      font-size: 40px;
+      margin: 8px 0;
+    }
+
+    #meaning,
+    #example {
+      font-size: 20px;
+      line-height: 1.6;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    button {
+      flex: 1;
+      font-size: 18px;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: #4caf50;
+      color: white;
+    }
+
+    #counter {
+      text-align: center;
+      color: #666;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <h1>我的 TOEIC 字卡</h1>
+
+    <section class="card">
+      <div class="label">單字</div>
+      <h2 id="word"></h2>
+
+      <div class="label">意思</div>
+      <p id="meaning"></p>
+
+      <div class="label">例句</div>
+      <p id="example"></p>
+    </section>
+
+    <div class="buttons">
+      <button onclick="prevCard()">上一張</button>
+      <button onclick="nextCard()">下一張</button>
+    </div>
+
+    <p id="counter"></p>
+  </main>
+
+  <script>
+    const words = [
+      {
+        word: "analyze",
+        meaning: "v. 分析",
+        example: "I need to analyze this circuit."
+      },
+      {
+        word: "efficient",
+        meaning: "adj. 有效率的",
+        example: "This is an efficient way to review vocabulary."
+      },
+      {
+        word: "verify",
+        meaning: "v. 確認、驗證",
+        example: "The engineer needs to verify the test result."
+      }
+    ];
+
+    let index = 0;
+
+    function showCard() {
+      const card = words[index];
+
+      document.getElementById("word").textContent = card.word;
+      document.getElementById("meaning").textContent = card.meaning;
+      document.getElementById("example").textContent = card.example;
+      document.getElementById("counter").textContent =
+        `${index + 1} / ${words.length}`;
+    }
+
+    function nextCard() {
+      index++;
+
+      if (index >= words.length) {
+        index = 0;
+      }
+
+      showCard();
+    }
+
+    function prevCard() {
+      index--;
+
+      if (index < 0) {
+        index = words.length - 1;
+      }
+
+      showCard();
+    }
+
+    showCard();
+  </script>
+</body>
+</html>
