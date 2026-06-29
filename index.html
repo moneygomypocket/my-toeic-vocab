@@ -1023,6 +1023,7 @@ enlarge 擴大，放大（表示擴大事務的尺寸，如：The company will e
     let flipped = false;
     let pointerStartX = 0;
     let pointerStartY = 0;
+    let pointerStartTime = 0;
     let trackingTouch = false;
     let suppressNextClick = false;
 
@@ -1210,6 +1211,7 @@ enlarge 擴大，放大（表示擴大事務的尺寸，如：The company will e
 
       pointerStartX = event.clientX;
       pointerStartY = event.clientY;
+      pointerStartTime = Date.now();
       trackingTouch = true;
     });
 
@@ -1220,7 +1222,11 @@ enlarge 擴大，放大（表示擴大事務的尺寸，如：The company will e
 
       const deltaX = event.clientX - pointerStartX;
       const deltaY = event.clientY - pointerStartY;
-      const isSwipe = Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25;
+      const elapsed = Date.now() - pointerStartTime;
+      const isSwipe =
+        Math.abs(deltaX) > 90 &&
+        Math.abs(deltaX) > Math.abs(deltaY) * 1.8 &&
+        elapsed < 650;
 
       trackingTouch = false;
 
