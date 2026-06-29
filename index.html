@@ -1059,6 +1059,8 @@ enlarge 擴大，放大（表示擴大事務的尺寸，如：The company will e
     let flipped = false;
     let pointerStartX = 0;
     let pointerStartY = 0;
+    let lastDeltaX = 0;
+    let lastDeltaY = 0;
     let trackingTouch = false;
     let draggingCard = false;
     let cardAnimating = false;
@@ -1124,7 +1126,7 @@ enlarge 擴大，放大（表示擴大事務的尺寸，如：The company will e
       const absX = Math.abs(deltaX);
       const absY = Math.abs(deltaY);
 
-      if (absX > 70 && absX > absY * 1.15) {
+      if (absX > 40 && absX > absY * 1.5) {
         return deltaX < 0 ? -1 : 1;
       }
 
@@ -1386,6 +1388,8 @@ enlarge 擴大，放大（表示擴大事務的尺寸，如：The company will e
 
       pointerStartX = event.clientX;
       pointerStartY = event.clientY;
+      lastDeltaX = 0;
+      lastDeltaY = 0;
       trackingTouch = true;
       draggingCard = false;
       pendingSwipeDirection = 0;
@@ -1405,6 +1409,9 @@ enlarge 擴大，放大（表示擴大事務的尺寸，如：The company will e
       const deltaY = event.clientY - pointerStartY;
       const absX = Math.abs(deltaX);
       const absY = Math.abs(deltaY);
+
+      lastDeltaX = deltaX;
+      lastDeltaY = deltaY;
 
       if (!draggingCard && absX > 10 && absX > absY * 1.1) {
         draggingCard = true;
@@ -1438,6 +1445,8 @@ enlarge 擴大，放大（表示擴大事務的尺寸，如：The company will e
 
       const deltaX = event.clientX - pointerStartX;
       const deltaY = event.clientY - pointerStartY;
+      lastDeltaX = deltaX;
+      lastDeltaY = deltaY;
       const swipeDirection = getSwipeDirection(deltaX, deltaY) || pendingSwipeDirection;
       const result = swipeDirection < 0 ? "next" : swipeDirection > 0 ? "prev" : "bounce";
 
@@ -1473,7 +1482,7 @@ enlarge 擴大，放大（表示擴大事務的尺寸，如：The company will e
 
     card.addEventListener("pointercancel", (event) => {
       trackingTouch = false;
-      const swipeDirection = pendingSwipeDirection;
+      const swipeDirection = pendingSwipeDirection || getSwipeDirection(lastDeltaX, lastDeltaY);
       const result = swipeDirection < 0 ? "next" : swipeDirection > 0 ? "prev" : "cancel";
 
       draggingCard = false;
@@ -1485,10 +1494,22 @@ enlarge 擴大，放大（表示擴大事務的尺寸，如：The company will e
 
       if (swipeDirection) {
         suppressUpcomingClick();
-        logGesture("cancel", { dir: swipeDirection, drag: true, result });
+        logGesture("cancel", {
+          dx: lastDeltaX,
+          dy: lastDeltaY,
+          dir: swipeDirection,
+          drag: true,
+          result
+        });
         finishSwipe(swipeDirection);
       } else {
-        logGesture("cancel", { dir: 0, drag: false, result });
+        logGesture("cancel", {
+          dx: lastDeltaX,
+          dy: lastDeltaY,
+          dir: 0,
+          drag: false,
+          result
+        });
         resetCardPosition("transform 0.2s ease-out");
       }
     });
