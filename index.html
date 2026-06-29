@@ -77,12 +77,12 @@
       padding: 36px;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       box-shadow: 0 18px 54px rgba(0, 0, 0, 0.48);
     }
 
     .card-front {
       align-items: center;
+      justify-content: center;
     }
 
     .word {
@@ -97,32 +97,38 @@
 
     .card-back {
       transform: rotateY(180deg);
-      align-items: flex-start;
+      align-items: stretch;
+      justify-content: flex-start;
+      gap: 18px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
     }
 
-    .label {
-      margin-bottom: 8px;
-      color: #30d158;
-      font-size: 15px;
+    .phonetic {
+      color: #bf5af2;
+      font-size: 28px;
+      line-height: 1.25;
       font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .detail,
+    .frequent {
+      margin: 0;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-size: 21px;
+      line-height: 1.55;
       letter-spacing: 0;
     }
 
-    .meaning {
-      width: 100%;
-      margin-bottom: 28px;
-      font-size: 34px;
-      line-height: 1.35;
-      font-weight: 650;
-      overflow-wrap: anywhere;
+    .detail {
+      color: #f2f2f7;
     }
 
-    .explanation {
-      width: 100%;
-      color: #e5e5ea;
-      font-size: 22px;
-      line-height: 1.7;
-      overflow-wrap: anywhere;
+    .frequent {
+      color: #30d158;
+      font-weight: 650;
     }
 
     .buttons {
@@ -178,12 +184,14 @@
         font-size: 44px;
       }
 
-      .meaning {
-        font-size: 30px;
+      .phonetic {
+        font-size: 24px;
       }
 
-      .explanation {
-        font-size: 20px;
+      .detail,
+      .frequent {
+        font-size: 18px;
+        line-height: 1.5;
       }
 
       .buttons {
@@ -204,11 +212,9 @@
         </div>
 
         <div class="card-face card-back">
-          <div class="label">中文意思</div>
-          <div id="meaning" class="meaning"></div>
-
-          <div class="label">解釋</div>
-          <div id="explanation" class="explanation"></div>
+          <div id="phonetic" class="phonetic"></div>
+          <pre id="detail" class="detail"></pre>
+          <pre id="frequent" class="frequent"></pre>
         </div>
       </section>
     </div>
@@ -224,26 +230,53 @@
   <script>
     const words = [
       {
+        word: "effect",
+        phonetic: "[I'fekt]",
+        detail: `N,效力;效果;影響
+The incentive policy will be in effect starting next
+week.
+V,造成結果
+He effected a sudden change in the company's
+expansion plan.`,
+        frequent: `常考:
+in effect=法律等有效力的;生效的
+come into effect =實施;生效
+take effect =法律等生效;實施
+have an effect on=對〜有影響
+secondary effect=次級效應
+effect 的慣用語很常考,所以請牢記這些慣用語。
+請區分effect(N,效果;影響)和effective(Adj,有
+效的)的詞性。
+put into effect 可以替換成apply。`
+      },
+      {
         word: "obligation",
-        meaning: "義務；責任",
-        explanation: "指因法律、規定、承諾或工作關係而必須完成的事情。"
+        phonetic: "",
+        detail: `N,義務;責任
+Employees have an obligation to follow company policy.`,
+        frequent: ""
       },
       {
         word: "analyze",
-        meaning: "分析",
-        explanation: "仔細研究資料、問題或情況，找出原因、結構或重點。"
+        phonetic: "",
+        detail: `V,分析
+The team will analyze the survey results before making a decision.`,
+        frequent: ""
       },
       {
         word: "verify",
-        meaning: "查證；確認",
-        explanation: "檢查資訊、文件或結果是否正確、真實或符合要求。"
+        phonetic: "",
+        detail: `V,查證;確認
+Please verify your contact information before submitting the form.`,
+        frequent: ""
       }
     ];
 
     const card = document.getElementById("card");
     const word = document.getElementById("word");
-    const meaning = document.getElementById("meaning");
-    const explanation = document.getElementById("explanation");
+    const phonetic = document.getElementById("phonetic");
+    const detail = document.getElementById("detail");
+    const frequent = document.getElementById("frequent");
     const counter = document.getElementById("counter");
     const prevButton = document.getElementById("prevButton");
     const nextButton = document.getElementById("nextButton");
@@ -259,12 +292,18 @@
       return window.matchMedia("(max-width: 600px)").matches;
     }
 
+    function setOptionalText(element, text) {
+      element.textContent = text || "";
+      element.hidden = !text;
+    }
+
     function showCard() {
       const cardData = words[index];
 
       word.textContent = cardData.word;
-      meaning.textContent = cardData.meaning;
-      explanation.textContent = cardData.explanation;
+      setOptionalText(phonetic, cardData.phonetic);
+      setOptionalText(detail, cardData.detail);
+      setOptionalText(frequent, cardData.frequent);
       counter.textContent = `${index + 1} / ${words.length}`;
 
       flipped = false;
