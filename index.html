@@ -1224,9 +1224,9 @@ enlarge 擴大，放大（表示擴大事務的尺寸，如：The company will e
       const deltaY = event.clientY - pointerStartY;
       const elapsed = Date.now() - pointerStartTime;
       const isSwipe =
-        Math.abs(deltaX) > 90 &&
-        Math.abs(deltaX) > Math.abs(deltaY) * 1.8 &&
-        elapsed < 650;
+        Math.abs(deltaX) > 60 &&
+        Math.abs(deltaX) > Math.abs(deltaY) * 1.35 &&
+        elapsed < 1200;
 
       trackingTouch = false;
 
