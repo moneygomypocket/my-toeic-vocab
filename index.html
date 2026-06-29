@@ -9,45 +9,92 @@
     body {
       margin: 0;
       font-family: Arial, "Noto Sans TC", sans-serif;
-      background: #f2f2f2;
-      color: #222;
+      background: #000;
+      color: #fff;
     }
 
     .app {
       max-width: 520px;
       margin: 0 auto;
-      padding: 24px;
+      padding: 28px 20px;
     }
 
     h1 {
       text-align: center;
-      font-size: 28px;
+      font-size: 26px;
+      margin-bottom: 28px;
+    }
+
+    .card-area {
+      perspective: 1000px;
     }
 
     .card {
-      background: white;
-      border-radius: 20px;
-      padding: 28px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-      margin-top: 24px;
+      position: relative;
+      width: 100%;
+      height: 560px;
+      border-radius: 24px;
+      transform-style: preserve-3d;
+      transition: transform 0.45s ease;
+      cursor: pointer;
+    }
+
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 24px;
+      background: #1c1c1e;
+      backface-visibility: hidden;
+      box-sizing: border-box;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .card-front .word {
+      font-size: 52px;
+      font-weight: 500;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    .card-back {
+      transform: rotateY(180deg);
+      align-items: flex-start;
+      justify-content: center;
     }
 
     .label {
       color: #4caf50;
-      font-size: 14px;
-      margin-top: 16px;
+      font-size: 15px;
+      margin-bottom: 8px;
     }
 
-    #word {
-      color: #4caf50;
-      font-size: 40px;
-      margin: 8px 0;
+    .meaning {
+      font-size: 34px;
+      margin-bottom: 28px;
+      line-height: 1.4;
     }
 
-    #meaning,
-    #example {
-      font-size: 20px;
-      line-height: 1.6;
+    .explanation {
+      font-size: 22px;
+      line-height: 1.7;
+      color: #ddd;
+    }
+
+    .hint {
+      position: absolute;
+      bottom: 28px;
+      left: 32px;
+      color: #888;
+      font-size: 18px;
     }
 
     .buttons {
@@ -59,16 +106,36 @@
     button {
       flex: 1;
       font-size: 18px;
-      padding: 14px;
+      padding: 15px;
       border: none;
-      border-radius: 12px;
+      border-radius: 14px;
       background: #4caf50;
       color: white;
     }
 
     #counter {
       text-align: center;
-      color: #666;
+      color: #aaa;
+      margin-top: 20px;
+      font-size: 16px;
+    }
+
+    @media (max-width: 430px) {
+      .card {
+        height: 560px;
+      }
+
+      .card-front .word {
+        font-size: 44px;
+      }
+
+      .meaning {
+        font-size: 30px;
+      }
+
+      .explanation {
+        font-size: 20px;
+      }
     }
   </style>
 </head>
@@ -77,20 +144,28 @@
   <main class="app">
     <h1>我的 TOEIC 字卡</h1>
 
-    <section class="card">
-      <div class="label">單字</div>
-      <h2 id="word"></h2>
+    <div class="card-area">
+      <section id="card" class="card" onclick="flipCard()">
+        <div class="card-face card-front">
+          <div id="word" class="word"></div>
+          <div class="hint">點一下看中文</div>
+        </div>
 
-      <div class="label">意思</div>
-      <p id="meaning"></p>
+        <div class="card-face card-back">
+          <div class="label">中文意思</div>
+          <div id="meaning" class="meaning"></div>
 
-      <div class="label">例句</div>
-      <p id="example"></p>
-    </section>
+          <div class="label">解釋</div>
+          <div id="explanation" class="explanation"></div>
+
+          <div class="hint">點一下回英文</div>
+        </div>
+      </section>
+    </div>
 
     <div class="buttons">
-      <button onclick="prevCard()">上一張</button>
-      <button onclick="nextCard()">下一張</button>
+      <button onclick="prevCard(event)">上一張</button>
+      <button onclick="nextCard(event)">下一張</button>
     </div>
 
     <p id="counter"></p>
@@ -99,35 +174,46 @@
   <script>
     const words = [
       {
-        word: "analyze",
-        meaning: "v. 分析",
-        example: "I need to analyze this circuit."
+        word: "obligation",
+        meaning: "責任；義務",
+        explanation: "指因為工作、合約、道德或法律而必須做的事情。"
       },
       {
-        word: "efficient",
-        meaning: "adj. 有效率的",
-        example: "This is an efficient way to review vocabulary."
+        word: "analyze",
+        meaning: "分析",
+        explanation: "把資料、問題或情況拆開來看，找出原因或結論。"
       },
       {
         word: "verify",
-        meaning: "v. 確認、驗證",
-        example: "The engineer needs to verify the test result."
+        meaning: "確認；驗證",
+        explanation: "確認某件事情是否正確，常用在測試、資料、結果驗證。"
       }
     ];
 
     let index = 0;
+    let flipped = false;
 
     function showCard() {
-      const card = words[index];
+      const cardData = words[index];
 
-      document.getElementById("word").textContent = card.word;
-      document.getElementById("meaning").textContent = card.meaning;
-      document.getElementById("example").textContent = card.example;
+      document.getElementById("word").textContent = cardData.word;
+      document.getElementById("meaning").textContent = cardData.meaning;
+      document.getElementById("explanation").textContent = cardData.explanation;
       document.getElementById("counter").textContent =
         `${index + 1} / ${words.length}`;
+
+      flipped = false;
+      document.getElementById("card").classList.remove("flipped");
     }
 
-    function nextCard() {
+    function flipCard() {
+      flipped = !flipped;
+      document.getElementById("card").classList.toggle("flipped", flipped);
+    }
+
+    function nextCard(event) {
+      event.stopPropagation();
+
       index++;
 
       if (index >= words.length) {
@@ -137,7 +223,9 @@
       showCard();
     }
 
-    function prevCard() {
+    function prevCard(event) {
+      event.stopPropagation();
+
       index--;
 
       if (index < 0) {
