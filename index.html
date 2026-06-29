@@ -150,6 +150,7 @@
       transform-style: preserve-3d;
       transition: transform 0.45s ease;
       user-select: none;
+      touch-action: none;
     }
 
     .card.dragging {
@@ -158,6 +159,7 @@
 
     .card.flipped {
       transform: rotateY(180deg);
+      touch-action: pan-y;
     }
 
     .card-face {
@@ -1037,6 +1039,7 @@ enlarge 擴大，放大（表示擴大事務的尺寸，如：The company will e
     let trackingTouch = false;
     let draggingCard = false;
     let cardAnimating = false;
+    let pendingSwipeDirection = 0;
     let suppressNextClick = false;
 
     function cloneDefaultFolders() {
@@ -1086,6 +1089,17 @@ enlarge 擴大，放大（表示擴大事務的尺寸，如：The company will e
 
     function isMobileLayout() {
       return window.matchMedia("(max-width: 600px)").matches;
+    }
+
+    function getSwipeDirection(deltaX, deltaY) {
+      const absX = Math.abs(deltaX);
+      const absY = Math.abs(deltaY);
+
+      if (absX > 70 && absX > absY * 1.15) {
+        return deltaX < 0 ? -1 : 1;
+      }
+
+      return 0;
     }
 
     function setOptionalText(element, text) {
@@ -1297,6 +1311,7 @@ enlarge 擴大，放大（表示擴大事務的尺寸，如：The company will e
       pointerStartY = event.clientY;
       trackingTouch = true;
       draggingCard = false;
+      pendingSwipeDirection = 0;
 
       if (card.setPointerCapture) {
         card.setPointerCapture(event.pointerId);
@@ -1326,6 +1341,8 @@ enlarge 擴大，放大（表示擴大事務的尺寸，如：The company will e
         event.preventDefault();
       }
 
+      pendingSwipeDirection = getSwipeDirection(deltaX, deltaY) || pendingSwipeDirection;
+
       const limitedX = Math.max(Math.min(deltaX, 180), -180);
       setCardPosition(limitedX, limitedX * 0.035, "none");
     });
@@ -1337,11 +1354,10 @@ enlarge 擴大，放大（表示擴大事務的尺寸，如：The company will e
 
       const deltaX = event.clientX - pointerStartX;
       const deltaY = event.clientY - pointerStartY;
-      const isSwipe =
-        Math.abs(deltaX) > 75 &&
-        Math.abs(deltaX) > Math.abs(deltaY) * 1.25;
+      const swipeDirection = getSwipeDirection(deltaX, deltaY) || pendingSwipeDirection;
 
       trackingTouch = false;
+      pendingSwipeDirection = 0;
 
       if (card.releasePointerCapture) {
         card.releasePointerCapture(event.pointerId);
@@ -1354,27 +1370,31 @@ enlarge 擴大，放大（表示擴大事務的尺寸，如：The company will e
       draggingCard = false;
       suppressUpcomingClick();
 
-      if (!isSwipe) {
+      if (!swipeDirection) {
         resetCardPosition("transform 0.2s ease-out");
         return;
       }
 
-      if (deltaX < 0) {
-        finishSwipe(-1);
-      } else {
-        finishSwipe(1);
-      }
+      finishSwipe(swipeDirection);
     });
 
     card.addEventListener("pointercancel", (event) => {
       trackingTouch = false;
+      const swipeDirection = pendingSwipeDirection;
+
       draggingCard = false;
+      pendingSwipeDirection = 0;
 
       if (card.releasePointerCapture) {
         card.releasePointerCapture(event.pointerId);
       }
 
-      resetCardPosition("transform 0.2s ease-out");
+      if (swipeDirection) {
+        suppressUpcomingClick();
+        finishSwipe(swipeDirection);
+      } else {
+        resetCardPosition("transform 0.2s ease-out");
+      }
     });
 
     addFolderButton.addEventListener("click", openFolderModal);
