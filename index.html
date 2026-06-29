@@ -6,37 +6,57 @@
   <title>我的 TOEIC 字卡</title>
 
   <style>
+    :root {
+      color-scheme: dark;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
+      min-height: 100vh;
       font-family: Arial, "Noto Sans TC", sans-serif;
       background: #000;
       color: #fff;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .app {
-      max-width: 520px;
+      width: min(100%, 560px);
+      min-height: 100vh;
       margin: 0 auto;
       padding: 28px 20px;
+      display: flex;
+      flex-direction: column;
     }
 
     h1 {
+      margin: 0 0 24px;
       text-align: center;
       font-size: 26px;
-      margin-bottom: 28px;
+      font-weight: 650;
+      letter-spacing: 0;
     }
 
     .card-area {
-      perspective: 1000px;
+      perspective: 1200px;
+      touch-action: pan-y;
     }
 
     .card {
       position: relative;
       width: 100%;
       height: 560px;
-      border-radius: 24px;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      color: inherit;
       transform-style: preserve-3d;
       transition: transform 0.45s ease;
       cursor: pointer;
+      user-select: none;
     }
 
     .card.flipped {
@@ -45,56 +65,64 @@
 
     .card-face {
       position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
-      border-radius: 24px;
-      background: #1c1c1e;
+      border: 1px solid #2c2c2e;
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0)),
+        #1c1c1e;
       backface-visibility: hidden;
-      box-sizing: border-box;
-      padding: 32px;
+      padding: 36px;
       display: flex;
       flex-direction: column;
       justify-content: center;
+      box-shadow: 0 18px 54px rgba(0, 0, 0, 0.48);
+    }
+
+    .card-front {
       align-items: center;
     }
 
-    .card-front .word {
-      font-size: 52px;
-      font-weight: 500;
+    .word {
+      width: 100%;
+      overflow-wrap: anywhere;
       text-align: center;
-      letter-spacing: 1px;
+      font-size: 52px;
+      line-height: 1.15;
+      font-weight: 650;
+      letter-spacing: 0;
     }
 
     .card-back {
       transform: rotateY(180deg);
       align-items: flex-start;
-      justify-content: center;
     }
 
     .label {
-      color: #4caf50;
-      font-size: 15px;
       margin-bottom: 8px;
+      color: #30d158;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0;
     }
 
     .meaning {
-      font-size: 34px;
+      width: 100%;
       margin-bottom: 28px;
-      line-height: 1.4;
+      font-size: 34px;
+      line-height: 1.35;
+      font-weight: 650;
+      overflow-wrap: anywhere;
     }
 
     .explanation {
+      width: 100%;
+      color: #e5e5ea;
       font-size: 22px;
       line-height: 1.7;
-      color: #ddd;
-    }
-
-    .hint {
-      position: absolute;
-      bottom: 28px;
-      left: 32px;
-      color: #888;
-      font-size: 18px;
+      overflow-wrap: anywhere;
     }
 
     .buttons {
@@ -103,29 +131,50 @@
       margin-top: 24px;
     }
 
-    button {
+    button.nav-button {
       flex: 1;
-      font-size: 18px;
-      padding: 15px;
+      min-height: 52px;
       border: none;
-      border-radius: 14px;
-      background: #4caf50;
-      color: white;
+      border-radius: 8px;
+      background: #30d158;
+      color: #000;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button.nav-button:active {
+      transform: translateY(1px);
     }
 
     #counter {
+      margin: 20px 0 0;
       text-align: center;
-      color: #aaa;
-      margin-top: 20px;
+      color: #8e8e93;
       font-size: 16px;
     }
 
-    @media (max-width: 430px) {
-      .card {
-        height: 560px;
+    @media (max-width: 600px) {
+      .app {
+        padding: 22px 16px;
       }
 
-      .card-front .word {
+      h1 {
+        margin-bottom: 18px;
+        font-size: 22px;
+      }
+
+      .card {
+        height: calc(100vh - 126px);
+        min-height: 430px;
+        max-height: 620px;
+      }
+
+      .card-face {
+        padding: 28px;
+      }
+
+      .word {
         font-size: 44px;
       }
 
@@ -136,6 +185,10 @@
       .explanation {
         font-size: 20px;
       }
+
+      .buttons {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -145,10 +198,9 @@
     <h1>我的 TOEIC 字卡</h1>
 
     <div class="card-area">
-      <section id="card" class="card" onclick="flipCard()">
+      <section id="card" class="card" aria-label="TOEIC vocabulary flashcard">
         <div class="card-face card-front">
           <div id="word" class="word"></div>
-          <div class="hint">點一下看中文</div>
         </div>
 
         <div class="card-face card-back">
@@ -157,15 +209,13 @@
 
           <div class="label">解釋</div>
           <div id="explanation" class="explanation"></div>
-
-          <div class="hint">點一下回英文</div>
         </div>
       </section>
     </div>
 
-    <div class="buttons">
-      <button onclick="prevCard(event)">上一張</button>
-      <button onclick="nextCard(event)">下一張</button>
+    <div class="buttons" aria-label="字卡切換">
+      <button class="nav-button" type="button" id="prevButton">上一張</button>
+      <button class="nav-button" type="button" id="nextButton">下一張</button>
     </div>
 
     <p id="counter"></p>
@@ -175,65 +225,116 @@
     const words = [
       {
         word: "obligation",
-        meaning: "責任；義務",
-        explanation: "指因為工作、合約、道德或法律而必須做的事情。"
+        meaning: "義務；責任",
+        explanation: "指因法律、規定、承諾或工作關係而必須完成的事情。"
       },
       {
         word: "analyze",
         meaning: "分析",
-        explanation: "把資料、問題或情況拆開來看，找出原因或結論。"
+        explanation: "仔細研究資料、問題或情況，找出原因、結構或重點。"
       },
       {
         word: "verify",
-        meaning: "確認；驗證",
-        explanation: "確認某件事情是否正確，常用在測試、資料、結果驗證。"
+        meaning: "查證；確認",
+        explanation: "檢查資訊、文件或結果是否正確、真實或符合要求。"
       }
     ];
 
+    const card = document.getElementById("card");
+    const word = document.getElementById("word");
+    const meaning = document.getElementById("meaning");
+    const explanation = document.getElementById("explanation");
+    const counter = document.getElementById("counter");
+    const prevButton = document.getElementById("prevButton");
+    const nextButton = document.getElementById("nextButton");
+
     let index = 0;
     let flipped = false;
+    let pointerStartX = 0;
+    let pointerStartY = 0;
+    let trackingTouch = false;
+    let suppressNextClick = false;
+
+    function isMobileLayout() {
+      return window.matchMedia("(max-width: 600px)").matches;
+    }
 
     function showCard() {
       const cardData = words[index];
 
-      document.getElementById("word").textContent = cardData.word;
-      document.getElementById("meaning").textContent = cardData.meaning;
-      document.getElementById("explanation").textContent = cardData.explanation;
-      document.getElementById("counter").textContent =
-        `${index + 1} / ${words.length}`;
+      word.textContent = cardData.word;
+      meaning.textContent = cardData.meaning;
+      explanation.textContent = cardData.explanation;
+      counter.textContent = `${index + 1} / ${words.length}`;
 
       flipped = false;
-      document.getElementById("card").classList.remove("flipped");
+      card.classList.remove("flipped");
     }
 
     function flipCard() {
       flipped = !flipped;
-      document.getElementById("card").classList.toggle("flipped", flipped);
+      card.classList.toggle("flipped", flipped);
     }
 
-    function nextCard(event) {
-      event.stopPropagation();
-
-      index++;
-
-      if (index >= words.length) {
-        index = 0;
-      }
-
+    function nextCard() {
+      index = (index + 1) % words.length;
       showCard();
     }
 
-    function prevCard(event) {
-      event.stopPropagation();
-
-      index--;
-
-      if (index < 0) {
-        index = words.length - 1;
-      }
-
+    function prevCard() {
+      index = (index - 1 + words.length) % words.length;
       showCard();
     }
+
+    card.addEventListener("click", () => {
+      if (suppressNextClick) {
+        suppressNextClick = false;
+        return;
+      }
+
+      flipCard();
+    });
+
+    card.addEventListener("pointerdown", (event) => {
+      if (!isMobileLayout() || event.pointerType !== "touch") {
+        return;
+      }
+
+      pointerStartX = event.clientX;
+      pointerStartY = event.clientY;
+      trackingTouch = true;
+    });
+
+    card.addEventListener("pointerup", (event) => {
+      if (!trackingTouch) {
+        return;
+      }
+
+      const deltaX = event.clientX - pointerStartX;
+      const deltaY = event.clientY - pointerStartY;
+      const isSwipe = Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.25;
+
+      trackingTouch = false;
+
+      if (!isSwipe) {
+        return;
+      }
+
+      suppressNextClick = true;
+
+      if (deltaX < 0) {
+        nextCard();
+      } else {
+        prevCard();
+      }
+    });
+
+    card.addEventListener("pointercancel", () => {
+      trackingTouch = false;
+    });
+
+    prevButton.addEventListener("click", prevCard);
+    nextButton.addEventListener("click", nextCard);
 
     showCard();
   </script>
