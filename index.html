@@ -62,8 +62,7 @@
       margin-top: 46px;
     }
 
-    .folder-item,
-    .add-folder-button {
+    .folder-item {
       width: 100%;
       border: 1px solid #252529;
       border-radius: 24px;
@@ -96,24 +95,6 @@
       line-height: 1.15;
       font-weight: 800;
       overflow-wrap: anywhere;
-    }
-
-    .add-folder-button {
-      min-height: 84px;
-      margin-top: 22px;
-      color: #70a7ff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      font-size: 28px;
-      font-weight: 800;
-    }
-
-    .plus {
-      font-size: 48px;
-      line-height: 0.8;
-      font-weight: 300;
     }
 
     .study-header {
@@ -273,75 +254,8 @@
       font-size: 16px;
     }
 
-    .modal {
-      position: fixed;
-      inset: 0;
-      z-index: 10;
-      padding: 22px;
-      display: grid;
-      place-items: center;
-      background: rgba(0, 0, 0, 0.68);
-    }
-
-    .modal[hidden],
     [hidden] {
       display: none;
-    }
-
-    .dialog {
-      width: min(100%, 420px);
-      border: 1px solid #2c2c2e;
-      border-radius: 24px;
-      background: #1c1c1e;
-      padding: 24px;
-      box-shadow: 0 24px 70px rgba(0, 0, 0, 0.62);
-    }
-
-    .dialog h2 {
-      margin: 0 0 18px;
-      font-size: 24px;
-      line-height: 1.25;
-    }
-
-    .folder-name-input {
-      width: 100%;
-      min-height: 52px;
-      border: 1px solid #3a3a3c;
-      border-radius: 12px;
-      background: #0f0f10;
-      color: #fff;
-      padding: 0 16px;
-      font-size: 18px;
-      outline: none;
-    }
-
-    .folder-name-input:focus {
-      border-color: #70a7ff;
-    }
-
-    .dialog-actions {
-      display: flex;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .dialog-button {
-      flex: 1;
-      min-height: 48px;
-      border: none;
-      border-radius: 12px;
-      font-size: 17px;
-      font-weight: 750;
-    }
-
-    .cancel-button {
-      background: #2c2c2e;
-      color: #f2f2f7;
-    }
-
-    .confirm-button {
-      background: #70a7ff;
-      color: #000;
     }
 
     .gesture-debug {
@@ -392,11 +306,6 @@
         font-size: 36px;
       }
 
-      .add-folder-button {
-        min-height: 82px;
-        font-size: 28px;
-      }
-
       .card {
         height: calc(100vh - 148px);
         min-height: 430px;
@@ -433,10 +342,6 @@
     <section id="folderView" class="screen active">
       <h1 id="folderCountTitle"></h1>
       <div id="folderList" class="folder-list"></div>
-      <button id="addFolderButton" class="add-folder-button" type="button">
-        <span class="plus" aria-hidden="true">+</span>
-        <span>新增資料夾</span>
-      </button>
     </section>
 
     <section id="cardView" class="screen">
@@ -474,17 +379,6 @@
   </main>
 
   <div id="gestureDebug" class="gesture-debug" hidden></div>
-
-  <div id="folderModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" hidden>
-    <form id="folderForm" class="dialog">
-      <h2 id="modalTitle">新增資料夾</h2>
-      <input id="folderNameInput" class="folder-name-input" type="text" placeholder="資料夾名稱" autocomplete="off" />
-      <div class="dialog-actions">
-        <button id="cancelFolderButton" class="dialog-button cancel-button" type="button">取消</button>
-        <button class="dialog-button confirm-button" type="submit">確認</button>
-      </div>
-    </form>
-  </div>
 
   <script>
     const STORAGE_KEY = "toeicFlashcardFoldersV2";
@@ -934,11 +828,6 @@
     const cardView = document.getElementById("cardView");
     const folderCountTitle = document.getElementById("folderCountTitle");
     const folderList = document.getElementById("folderList");
-    const addFolderButton = document.getElementById("addFolderButton");
-    const folderModal = document.getElementById("folderModal");
-    const folderForm = document.getElementById("folderForm");
-    const folderNameInput = document.getElementById("folderNameInput");
-    const cancelFolderButton = document.getElementById("cancelFolderButton");
     const backButton = document.getElementById("backButton");
     const deckTitle = document.getElementById("deckTitle");
     const studyArea = document.getElementById("studyArea");
@@ -1250,28 +1139,6 @@
       showCard();
     }
 
-    function openFolderModal() {
-      folderNameInput.value = "";
-      folderModal.hidden = false;
-      folderNameInput.focus();
-    }
-
-    function closeFolderModal() {
-      folderModal.hidden = true;
-    }
-
-    function createFolder(name) {
-      folders.push({
-        id: `folder-${Date.now()}`,
-        language: "English",
-        name,
-        cards: []
-      });
-
-      saveFolders();
-      renderFolders();
-    }
-
     card.addEventListener("click", () => {
       if (cardAnimating || suppressNextClick) {
         suppressNextClick = false;
@@ -1414,31 +1281,9 @@
       }
     });
 
-    addFolderButton.addEventListener("click", openFolderModal);
-    cancelFolderButton.addEventListener("click", closeFolderModal);
     backButton.addEventListener("click", showFolderView);
     prevButton.addEventListener("click", prevCard);
     nextButton.addEventListener("click", nextCard);
-
-    folderModal.addEventListener("click", (event) => {
-      if (event.target === folderModal) {
-        closeFolderModal();
-      }
-    });
-
-    folderForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-
-      const folderName = folderNameInput.value.trim();
-
-      if (!folderName) {
-        folderNameInput.focus();
-        return;
-      }
-
-      createFolder(folderName);
-      closeFolderModal();
-    });
 
     renderFolders();
     saveFolders();
